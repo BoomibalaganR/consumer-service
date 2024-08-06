@@ -1,3 +1,4 @@
+from datetime import datetime
 from api.verification.models import EmailVerification
 from .models import Consumer
 from rest_framework import serializers
@@ -93,3 +94,40 @@ class ConsumerDetailSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class ResendPasswordTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class VerifyPasswordTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    token = serializers.CharField(max_length=32, required=True)
+    password = serializers.CharField(write_only=True, required=True)
+    confirm_password = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        # Check if passwords match
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError(
+                {"confirm_password": ["Passwords do not match with confirm_password."]})
+
+        # Validate OTP
+        email = data.get('email')
+        token = data.get('token')
+
+        
+        consumer = Consumer.get_by_email(email=email)
+        if consumer.password_reset_token != token:
+            raise serializers.ValidationError({"token": ["Invalid token."]})
+
+        td = datetime.utcnow() - consumer.password_reset_timestamp
+        minutes = int(td.total_seconds() / 60)
+        if minutes > 5:
+            raise serializers.ValidationError({"otp": ["Token has expired."]})
+
+        return data

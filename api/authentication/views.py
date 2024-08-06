@@ -1,14 +1,17 @@
+
+from api.verification.models import EmailVerification
 from .serializers import LoginSerializer
 from .models import Consumer
 from rest_framework import generics, status
 
 from api.verification.services import EmailVerificationService
-from .serializers import ConsumerCreateSerializer, ConsumerDetailSerializer 
-from .util import generate_jwt_token
+from .serializers import ConsumerCreateSerializer, ConsumerDetailSerializer, ForgotPasswordSerializer,VerifyPasswordTokenSerializer, ResendPasswordTokenSerializer
+from .util import generate_jwt_token, send_password_reset_email, send_password_change_email
 from rest_framework.response import Response
 from rest_framework.response import Response 
 from rest_framework import status 
-from common.decorator import validatePayload
+from common.decorator import validatePayload 
+
 
 
 class ConsumerRegisterView(generics.GenericAPIView):
@@ -57,3 +60,59 @@ class LoginView(generics.GenericAPIView):
             data={'token': token, 'data': serializer.data},
             status=status.HTTP_200_OK
         )
+
+
+class ForgotPasswordView(generics.GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+
+    @validatePayload
+    def post(self, request, *args, **kwargs):
+       
+        email = self.payload['email'] # type: ignore
+
+        consumer = Consumer.get_by_email(email=email) # type: ignore
+       
+        # Generate a reset token
+        token = consumer.generate_password_reset_token() 
+        if EmailVerification.is_email_verified(consumer.email):
+            send_password_reset_email(consumer=consumer, token=token)
+
+        return Response({'detail': 'A token to reset your password is sent to your email. It is valid for 5 mins',
+                         'reset-token': token},
+                        status=status.HTTP_200_OK)
+
+
+class VerifyPasswordTokenView(generics.GenericAPIView):
+    serializer_class = VerifyPasswordTokenSerializer
+
+    @validatePayload
+    def post(self, request, *args, **kwargs):
+        
+        email = self.payload['email'] # type: ignore
+        password = self.payload['password'] # type: ignore
+
+        
+        consumer = Consumer.get_by_email(email=email)
+        consumer.set_password(password)
+        if EmailVerification.is_email_verified(consumer.email):
+            send_password_change_email(consumer=consumer)
+
+        return Response({'detail': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
+
+
+class ResendPasswordTokenView(generics.GenericAPIView):
+    serializer_class = ResendPasswordTokenSerializer
+
+    @validatePayload
+    def post(self, request, *args, **kwargs):
+        
+        email = self.payload['email'] # type: ignore
+        consumer = Consumer.get_by_email(email=email)
+        
+        # Generate a reset token
+        token = consumer.generate_password_reset_token()
+        if EmailVerification.is_email_verified(consumer.email): 
+            send_password_reset_email(consumer=consumer, token=token)
+
+        return Response({'detail': 'A token to reset your password is sent to your email. It is valid for 5 mins',
+                         'reset-token': token}, status=status.HTTP_200_OK)

@@ -2,8 +2,10 @@ from datetime import datetime
 import os
 from mongoengine import Document, EmbeddedDocument, fields
 
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.exceptions import NotFound
+
+# from django.utils.crypto import get_random_string 
 
 class Country(EmbeddedDocument):
     index = fields.StringField()
@@ -72,7 +74,6 @@ class Consumer(Document):
                 self.joined = datetime.utcnow()
             return super(Consumer, self).save(*args, **kwargs)
 
-
     def is_password_match(self, password):
         return check_password(password, self.password) # type: ignore
 
@@ -83,6 +84,20 @@ class Consumer(Document):
             return self.mobile.strip() # type: ignore
         return None 
     
-    def update_lastlogin(self):
+    def update_lastlogin(self): 
         self.lastlogin = datetime.utcnow()
+        self.save() 
+
+    def generate_password_reset_token(self):  
+        if self.password_reset_token is None: 
+            token = os.urandom(5).hex().lower()
+            self.password_reset_token = token
+        self.password_reset_timestamp = datetime.utcnow()
+        self.save() 
+        return self.password_reset_token
+
+    def set_password(self, newPassword): 
+        self.password = make_password(newPassword) 
+        self.password_reset_token = None  # Clear the reset token
+        self.password_reset_timestamp = None  # Clear the timestamp
         self.save()
