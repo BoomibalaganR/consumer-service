@@ -1,9 +1,11 @@
+from api.verification.models import EmailVerification
+from .models import Consumer
 from rest_framework import serializers
 from .models import Consumer, Country
 from django.contrib.auth.hashers import make_password
 
 
-class ConsumerSerializer(serializers.Serializer):
+class ConsumerCreateSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=255, required=True)
     last_name = serializers.CharField(max_length=255, required=True)
     email = serializers.EmailField(required=False)
@@ -43,7 +45,8 @@ class ConsumerSerializer(serializers.Serializer):
 
         return data
 
-    def create(self, validated_data):
+    def create(self, validated_data): 
+        print('inside serailzer create....')
         validated_data.pop('confirm_password')
 
         validated_data['coffer_id'] = Consumer.generate_coffer_id()
@@ -63,6 +66,28 @@ class ConsumerSerializer(serializers.Serializer):
         consumer.save()  
         
         return consumer
+
+
+class ConsumerDetailSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email_verified = serializers.SerializerMethodField()
+    mobile_verified = serializers.SerializerMethodField()
+    lastlogin = serializers.DateTimeField()
+    email = serializers.EmailField()
+    mobile = serializers.CharField()
+    pk = serializers.CharField(source='id')
+    password_mode = serializers.CharField(default="normal")
+    uid = serializers.SerializerMethodField()
+
+    def get_email_verified(self, obj):
+        return EmailVerification.is_email_verified(obj.email)  # type: ignore
+
+    def get_mobile_verified(self, obj):
+        return False
+
+    def get_uid(self, obj):
+        return obj.custom_uid()
 
 
 class LoginSerializer(serializers.Serializer):

@@ -75,7 +75,7 @@ class EmailVerificationService:
         print("\n<<<<<<<================================================>>>>>>>>>>")
         print(payload)
         print("<<<<<<<================================================>>>>>>>>>>\n")
-        return token
+        return token # for developement purpose
     
    
     

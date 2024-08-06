@@ -31,9 +31,9 @@ except Exception as e:
     
 # settings.py
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'common.tokenAuthenticate.CustomJWTAuthentication',
+    # ),
 }
 
 SIMPLE_JWT = {
