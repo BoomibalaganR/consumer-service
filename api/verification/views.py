@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from api.authentication.models import Consumer
+from api.consumer_profile.models import Consumer
 from .serializers import EmailVerificationSerializer, ResendEmailVerificationSerializer
 from .services import EmailVerificationService
 from common.decorator import validatePayload 

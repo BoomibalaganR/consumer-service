@@ -20,7 +20,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('consumers/auth/', include('api.authentication.urls')),
-    # path('profile/', include('consumer_profile.urls')),
+    path('consumers/profile', include('api.consumer_profile.urls')),
     path('consumers/verification/', include('api.verification.urls')),
     # path('reminders/', include('reminders.urls')),
     # path('relationships/', include('relationships.urls')),

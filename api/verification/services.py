@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from api.authentication.models import Consumer
+from api.consumer_profile.models import Consumer
 from .models import EmailVerification
 from rest_framework.exceptions import ValidationError
 

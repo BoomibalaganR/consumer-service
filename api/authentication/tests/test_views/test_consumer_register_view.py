@@ -1,12 +1,13 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from unittest.mock import patch
-from api.authentication.models import Consumer, Country
-from api.verification.services import EmailVerificationService
-from mongoengine import connect, disconnect, Document, fields
+from api.consumer_profile.models import Consumer
+from mongoengine import connect, disconnect
 
-class ConsumerRegisterViewTests(APITestCase):
+class ConsumerRegisterViewTests(APITestCase): 
+    def setUp(self):
+        self.client = APIClient()
     @classmethod
     def setUpClass(cls):
             super().setUpClass()

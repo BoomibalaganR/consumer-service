@@ -1,11 +1,11 @@
 
 from api.verification.models import EmailVerification
 from .serializers import LoginSerializer
-from .models import Consumer, Country
+from api.consumer_profile.models import Consumer, Country
 from rest_framework import generics, status
 
 from api.verification.services import EmailVerificationService
-from .serializers import ConsumerCreateSerializer, ConsumerDetailSerializer, ForgotPasswordSerializer,VerifyPasswordTokenSerializer, ResendPasswordTokenSerializer
+from .serializers import ConsumerCreateSerializer, ConsumerAuthResponseSerializer, ForgotPasswordSerializer,VerifyPasswordTokenSerializer, ResendPasswordTokenSerializer
 from .util import generate_jwt_token, send_password_reset_email, send_password_change_email
 from rest_framework.response import Response
 from rest_framework.response import Response 
@@ -69,7 +69,7 @@ class LoginView(generics.GenericAPIView):
         if consumer.lastlogin is None: 
             print("==========>>>> WELCOME EMAIL <<<<==============")
       
-        serializer = ConsumerDetailSerializer(consumer)
+        serializer = ConsumerAuthResponseSerializer(consumer)
     
         token = generate_jwt_token(consumer)
         consumer.update_lastlogin()

@@ -1,9 +1,8 @@
 from datetime import datetime
 from api.verification.models import EmailVerification
-from .models import Consumer
+
 from rest_framework import serializers
-from .models import Consumer, Country
-from django.contrib.auth.hashers import make_password
+from api.consumer_profile.models import Consumer
 
 
 class ConsumerCreateSerializer(serializers.Serializer):
@@ -69,7 +68,7 @@ class ConsumerCreateSerializer(serializers.Serializer):
     #     return consumer
 
 
-class ConsumerDetailSerializer(serializers.Serializer):
+class ConsumerAuthResponseSerializer(serializers.Serializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     email_verified = serializers.SerializerMethodField()
