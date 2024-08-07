@@ -1,35 +1,36 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.exceptions import  AuthenticationFailed, NotAuthenticated
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from api.consumer_profile.models import Consumer
 import jwt
-
-from api.authentication.models import Consumer
 
 
 class CustomJWTAuthentication(JWTAuthentication):
     def authenticate(self, request):
         auth_header = request.headers.get('Authorization')
-        token = auth_header and auth_header.split(' ')[1] 
-        
-        if not token:
-            raise NotAuthenticated("UnAuthorized")
+        token = auth_header.split(' ')[1] if auth_header else None
 
-       
+        if not token:
+            raise NotAuthenticated("Unauthorized")
+
         try:
-            # Decode the JWT token using `simplejwt`'
-            payload = self.get_validated_token(token).payload
+            # Decode the JWT token using `simplejwt`
+            validated_token = self.get_validated_token(token)
+            payload = validated_token.payload
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired')
         except jwt.InvalidTokenError:
-            raise AuthenticationFailed('Invalid token')
+            raise AuthenticationFailed('Token is invalid')
+        except TokenError:
+            raise AuthenticationFailed('Token is invalid or expired')
 
         try:
             user = Consumer.objects.get(coffer_id=payload['coffer_id']) # type: ignore
         except Consumer.DoesNotExist: # type: ignore
-            raise AuthenticationFailed('consumer not found')
+            raise AuthenticationFailed('Consumer not found')
 
-        request.user = payload 
-        print('successfully authicated...', request.user)
-        
+        print('Successfully authenticated...')
+        return (validated_token, None)
 
     def authenticate_header(self, request):
         return 'Bearer'

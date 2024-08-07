@@ -17,24 +17,24 @@ DEBUG = os.getenv("DEBUG", "true") == "true"
 #         os.getenv('MONGO_DB_CLUSTER')}/?retryWrites=true&w=majority",
 # )
 
-try:
-    mongoengine.connect(
-        db='vitagist-DB',
-        host='mongodb+srv://boomibalaganR:Boomi1234@cluster0.ue0af0l.mongodb.net/vitagist-DB?retryWrites=true&w=majority&appName=Cluster0',
-        username='boomibalaganR',
-        password='Boomi1234',
-        authentication_source='admin'
-    )
-    print("cloud DB successfully connected.")
-except Exception as e:
-    print(f"Error connecting to MongoDB: {e}") 
+# try:
+#     mongoengine.connect(
+#         db='vitagist-DB',
+#         host='mongodb+srv://boomibalaganR:Boomi1234@cluster0.ue0af0l.mongodb.net/vitagist-DB?retryWrites=true&w=majority&appName=Cluster0',
+#         username='boomibalaganR',
+#         password='Boomi1234',
+#         authentication_source='admin'
+#     )
+#     print("cloud DB successfully connected.")
+# except Exception as e:
+#     print(f"Error connecting to MongoDB: {e}") 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': ':memory:',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+}
     # settings.py
 REST_FRAMEWORK = {
     # 'DEFAULT_AUTHENTICATION_CLASSES': (
