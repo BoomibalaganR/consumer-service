@@ -1,7 +1,7 @@
 
 from api.verification.models import EmailVerification
 from .serializers import LoginSerializer
-from .models import Consumer
+from .models import Consumer, Country
 from rest_framework import generics, status
 
 from api.verification.services import EmailVerificationService
@@ -13,15 +13,33 @@ from rest_framework import status
 from common.decorator import validatePayload 
 
 
+from django.contrib.auth.hashers import make_password
 
 class ConsumerRegisterView(generics.GenericAPIView):
     serializer_class = ConsumerCreateSerializer
 
     @validatePayload
     def post(self, request, *args, **kwargs):
-        
-        consumer = self.get_serializer().create(self.payload) # type: ignore
+    
+        self.payload.pop('confirm_password') # type: ignore
 
+        self.payload['coffer_id'] = Consumer.generate_coffer_id() # type: ignore
+        self.payload['password'] = make_password(self.payload['password'])  # type: ignore
+
+        # Create Country instance
+        country_data = {
+            'index': 'citizen_primary',
+            'country': self.payload.get('country', ''), # type: ignore
+            'affiliation_type': 'citz',
+            'mobile_phone': self.payload.get('mobile', '') # type: ignore
+        }
+        country = Country(**country_data)
+        
+        # Create Consumer instance
+        consumer = Consumer( **self.payload, citizen=[country] )    # type: ignore
+        consumer.save()  
+        
+        # return consumer
         # Create email verification after registration
         verification_token = EmailVerificationService.create_email_verification(
             consumer.coffer_id)

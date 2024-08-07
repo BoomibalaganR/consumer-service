@@ -17,14 +17,7 @@ class EmailVerification(Document):
     meta = {'indexes': ['email']}
 
    
-    # @classmethod
-    # def get_by_coffer_id(cls, coffer_id):
-    #     verification_record = cls.objects(coffer_id=coffer_id).first()  # type: ignore
-    #     if not verification_record:
-    #         raise NotFound(
-    #             "No email verification record found for the provided coffer ID.")
-    #     return verification_record
-
+   
     @classmethod
     def get_by_email(cls, email): 
         verification_record = cls.objects(email=email).first()  # type: ignore

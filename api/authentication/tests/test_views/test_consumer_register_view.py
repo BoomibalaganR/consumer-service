@@ -1,97 +1,111 @@
-from django.test import RequestFactory
-from rest_framework import status
+from django.urls import reverse
 from rest_framework.test import APITestCase
-from unittest.mock import patch, MagicMock
-from api.authentication.views import ConsumerRegisterView
-from rest_framework.exceptions import ValidationError
+from rest_framework import status
+from unittest.mock import patch
+from api.authentication.models import Consumer, Country
+from api.verification.services import EmailVerificationService
+from mongoengine import connect, disconnect, Document, fields
 
+class ConsumerRegisterViewTests(APITestCase):
+    @classmethod
+    def setUpClass(cls):
+            super().setUpClass()
+            cls.db_name = 'test_db'
+            cls.client = connect(cls.db_name, host='localhost', port=27017)
 
-class ConsumerRegisterViewUnitTestCase(APITestCase):
+    @classmethod
+    def tearDownClass(cls):
+        # Drop the test database
+        cls.client.drop_database(cls.db_name) # type: ignore
+        disconnect()
+        super().tearDownClass()
 
-   
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.view = ConsumerRegisterView.as_view()
-        self.valid_payload = {
-            "first_name": "Boomibalagan",
-            "last_name": "R",
-            "country": "USA",
-            "email": "boomi@gmail.com",
-            "password": "dev123",
-            "confirm_password": "dev123"
-        }
-        self.invalid_payload = {
-            "first_name": "",
-            "last_name": "R",
-            "country": "USA",
-            "email": "boomi@gmail.com",
-            "password": "dev123",
-            "confirm_password": "dev123"
-        }
-        self.password_mismatch_payload = {
-            "first_name": "Boomibalagan",
-            "last_name": "R",
-            "country": "USA",
-            "email": "boomi@gmail.com",
-            "password": "dev123",
-            "confirm_password": "dev456"
-        }
-
-    @patch('api.authentication.serializers.ConsumerSerializer.save')
-    @patch('api.authentication.serializers.ConsumerSerializer.is_valid')
     @patch('api.verification.services.EmailVerificationService.create_email_verification')
-    def test_register_consumer_success(self, mock_create_email_verification, mock_serializer_is_valid, mock_serializer_save):
-        # Setup mocks
-        mock_serializer_is_valid.return_value = True
-        mock_serializer_save.return_value = MagicMock(coffer_id='test_coffer_id')
+    def test_successful_registration(self, mock_create_email_verification):
+        # Mock the email verification token
+        mock_create_email_verification.return_value = 'email-verification-token'
 
-        # Create a mock request
-        request = self.factory.post('/consumers/auth/register', self.valid_payload, content_type='application/json')
+        data = {
+            'first_name': 'arun',
+            'last_name': 'R',
+            'email': 'arun@gmail.com',
+            'password': 'dev123',
+            'confirm_password': 'dev123',
+            'country': 'USA'
+        }
 
-        # Call the view
-        response = self.view(request)
-
-        # Assertions
+        response = self.client.post(reverse('consumer-register'), data, format='json')
+        print(response)
+        # Check if the response status is 201 Created
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Check if the response contains expected message and verification token
+        self.assertIn(
+            'Consumer registered successfully. Verification email sent.', response.data['message']) # type: ignore
         self.assertEqual(
-            response.data['message'], 'Consumer registered successfully. Verification email sent.') # type: ignore
-        mock_create_email_verification.assert_called_once_with(
-            'test_coffer_id')
+            response.data['verification_token'], 'email-verification-token') # type: ignore
+        
+        # Check if the country is associated with the consumer
+        consumer = Consumer.objects.get(email='arun@gmail.com') # type: ignore  
+        # Check if the consumer is created in the database
+        self.assertTrue(consumer.email == 'arun@gmail.com')  # type: ignore
 
-    @patch('api.authentication.serializers.ConsumerSerializer.save')
-    @patch('api.authentication.serializers.ConsumerSerializer.is_valid')
-    @patch('api.verification.services.EmailVerificationService.create_email_verification')
-    def test_register_consumer_invalid_data(self, mock_create_email_verification, mock_serializer_is_valid, mock_serializer_save):
-        # Setup mocks
-        mock_serializer_is_valid.side_effect = ValidationError("Invalid data")
+        
+    def test_registration_missing_email(self):
+        data = {
+            'first_name': 'Boomibalagan',
+            'last_name': 'R',
+            
+            'password': 'dev123',
+            'confirm_password': 'dev123',
+            'country': 'USA'
+        }
 
-        # Create a mock request
-        request = self.factory.post(
-            '/consumers/auth/register', self.invalid_payload, content_type='application/json')
+        response = self.client.post(
+            reverse('consumer-register'), data, format='json')
 
-        # Call the view
-        response = self.view(request)
-
-        # Assertions
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        mock_create_email_verification.assert_not_called()
+        self.assertIn('non_field_errors', response.data) # type: ignore
 
-    @patch('api.authentication.serializers.ConsumerSerializer.save')
-    @patch('api.authentication.serializers.ConsumerSerializer.is_valid')
-    @patch('api.verification.services.EmailVerificationService.create_email_verification')
-    def test_register_consumer_password_mismatch(self, mock_create_email_verification, mock_serializer_is_valid, mock_serializer_save):
-        # Setup mocks
-        mock_serializer_is_valid.return_value = True
-        mock_serializer_save.side_effect = ValidationError("Passwords do not match")
+    def test_password_mismatch(self):
+        data = {
+            'first_name': 'Boomibalagan',
+            'last_name': 'R',
+            'email': 'boomibalagan@gmail.com',
+            'password': 'dev123',
+            'confirm_password': 'dev1234',
+            'country': 'USA'
+        }
 
-        # Create a mock request
-        request = self.factory.post('/consumers/auth/register', self.password_mismatch_payload, content_type='application/json')
+        response = self.client.post(
+            reverse('consumer-register'), data, format='json')
 
-        # Call the view
-        response = self.view(request)
-
-        # Assertions
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        mock_create_email_verification.assert_not_called()
+        self.assertIn('confirm_password', response.data) # type: ignore
 
- 
+    def test_email_already_registered(self):
+        Consumer.objects.create( # type: ignore
+            first_name='Boomibalagan',
+            last_name='R',
+            email='boomibalagan@gmail.com',
+            password='hashed_password',
+            coffer_id='coffer_id',
+            country='USA'
+        )
+
+        data = {
+            'first_name': 'Boomibalagan',
+            'last_name': 'R',
+            'email': 'boomibalagan@gmail.com',
+            'password': 'dev123',
+            'confirm_password': 'dev123',
+            'country': 'USA'
+        }
+
+        response = self.client.post(
+            reverse('consumer-register'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data) # type: ignore
+
+  

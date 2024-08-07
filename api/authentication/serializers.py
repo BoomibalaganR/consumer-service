@@ -46,27 +46,27 @@ class ConsumerCreateSerializer(serializers.Serializer):
 
         return data
 
-    def create(self, validated_data): 
-        print('inside serailzer create....')
-        validated_data.pop('confirm_password')
+    # def create(self, validated_data): 
+    #     print('inside serailzer create....')
+    #     validated_data.pop('confirm_password')
 
-        validated_data['coffer_id'] = Consumer.generate_coffer_id()
-        validated_data['password'] = make_password(validated_data['password'])
+    #     validated_data['coffer_id'] = Consumer.generate_coffer_id()
+    #     validated_data['password'] = make_password(validated_data['password'])
 
-        # Create Country instance
-        country_data = {
-            'index': 'citizen_primary',
-            'country': validated_data.get('country', ''),
-            'affiliation_type': 'citz',
-            'mobile_phone': validated_data.get('mobile', '')
-        }
-        country = Country(**country_data)
+    #     # Create Country instance
+    #     country_data = {
+    #         'index': 'citizen_primary',
+    #         'country': validated_data.get('country', ''),
+    #         'affiliation_type': 'citz',
+    #         'mobile_phone': validated_data.get('mobile', '')
+    #     }
+    #     country = Country(**country_data)
         
-        # Create Consumer instance
-        consumer = Consumer( **validated_data, citizen=[country] )   
-        consumer.save()  
+    #     # Create Consumer instance
+    #     consumer = Consumer( **validated_data, citizen=[country] )   
+    #     consumer.save()  
         
-        return consumer
+    #     return consumer
 
 
 class ConsumerDetailSerializer(serializers.Serializer):

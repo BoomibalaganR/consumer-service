@@ -13,15 +13,7 @@ class CustomJWTAuthentication(JWTAuthentication):
         if not token:
             raise NotAuthenticated("UnAuthorized")
 
-        # try:
-        #     prefix, token = auth_header.split(' ')
-        #     if prefix.lower() != 'bearer':
-        #         raise exceptions.AuthenticationFailed(
-        #             'Authorization header must start with Bearer')
-        # except ValueError:
-        #     raise exceptions.AuthenticationFailed(
-        #         'Invalid Authorization header format')
-
+       
         try:
             # Decode the JWT token using `simplejwt`'
             payload = self.get_validated_token(token).payload

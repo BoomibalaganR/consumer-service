@@ -1,4 +1,4 @@
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from api.authentication.models import Consumer

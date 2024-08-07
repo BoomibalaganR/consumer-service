@@ -28,8 +28,14 @@ try:
     print("cloud DB successfully connected.")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}") 
-    
-# settings.py
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': ':memory:',
+#     }
+# }
+    # settings.py
 REST_FRAMEWORK = {
     # 'DEFAULT_AUTHENTICATION_CLASSES': (
     #     'common.tokenAuthenticate.CustomJWTAuthentication',
