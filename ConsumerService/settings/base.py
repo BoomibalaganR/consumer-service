@@ -29,10 +29,11 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     'corsheaders',
     'api.authentication',
-    'api.verification',
+    'api.verification', 
 
     # Django REST framework
     'rest_framework',
+    'rest_framework_mongoengine',
 
 ]
 

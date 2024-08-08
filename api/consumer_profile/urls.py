@@ -1,7 +1,8 @@
 # consumers/urls.py
 from django.urls import path
-from .views import ConsumerProfileDetailView
+
+from .views import ConsumerProfileView
 
 urlpatterns = [
-    path('', ConsumerProfileDetailView.as_view(), name='consumer-profile-detail'),
+    path("", ConsumerProfileView.as_view(), name="consumer-profile-detail"),
 ]

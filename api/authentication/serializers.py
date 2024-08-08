@@ -1,8 +1,8 @@
 from datetime import datetime
-from api.verification.models import EmailVerification
 
-from rest_framework import serializers
 from api.consumer_profile.models import Consumer
+from api.verification.models import EmailVerification
+from rest_framework import serializers
 
 
 class ConsumerCreateSerializer(serializers.Serializer):
@@ -12,40 +12,39 @@ class ConsumerCreateSerializer(serializers.Serializer):
     mobile = serializers.CharField(max_length=10, required=False)
     password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
-    country = serializers.CharField(required=True) 
+    country = serializers.CharField(required=True)
 
     def validate(self, data):
-        print('inside validate function')
+        print("inside validate function")
         # Check if either email or mobile is provided
-        if not data.get('email') and not data.get('mobile'):
+        if not data.get("email") and not data.get("mobile"):
             raise serializers.ValidationError(
-                {"non_field_errors": [
-                    "Either email or mobile must be provided."]}
+                {"non_field_errors": ["Either email or mobile must be provided."]}
             )
 
         # Check if passwords and confirm password
-        if data['password'] != data['confirm_password']:
+        if data["password"] != data["confirm_password"]:
             raise serializers.ValidationError(
                 {"confirm_password": ["Passwords do not match with password."]}
             )
 
         # Check if email is already registered
-        if 'email' in data:
-            if Consumer.objects(email=data['email'].lower()).first(): # type: ignore
+        if "email" in data:
+            if Consumer.objects(email=data["email"].lower()).first():  # type: ignore
                 raise serializers.ValidationError(
                     {"email": ["Email is already registered."]}
                 )
 
         # Check if mobile number is already registered
-        if 'mobile' in data:
-            if Consumer.objects(mobile=data['mobile']).first(): # type: ignore
+        if "mobile" in data:
+            if Consumer.objects(mobile=data["mobile"]).first():  # type: ignore
                 raise serializers.ValidationError(
                     {"mobile": ["Mobile number is already registered."]}
                 )
 
         return data
 
-    # def create(self, validated_data): 
+    # def create(self, validated_data):
     #     print('inside serailzer create....')
     #     validated_data.pop('confirm_password')
 
@@ -60,11 +59,11 @@ class ConsumerCreateSerializer(serializers.Serializer):
     #         'mobile_phone': validated_data.get('mobile', '')
     #     }
     #     country = Country(**country_data)
-        
+
     #     # Create Consumer instance
-    #     consumer = Consumer( **validated_data, citizen=[country] )   
-    #     consumer.save()  
-        
+    #     consumer = Consumer( **validated_data, citizen=[country] )
+    #     consumer.save()
+
     #     return consumer
 
 
@@ -76,7 +75,7 @@ class ConsumerAuthResponseSerializer(serializers.Serializer):
     lastlogin = serializers.DateTimeField()
     email = serializers.EmailField()
     mobile = serializers.CharField()
-    pk = serializers.CharField(source='id')
+    pk = serializers.CharField(source="id")
     password_mode = serializers.CharField(default="normal")
     uid = serializers.SerializerMethodField()
 
@@ -111,15 +110,15 @@ class VerifyPasswordTokenSerializer(serializers.Serializer):
 
     def validate(self, data):
         # Check if passwords match
-        if data['password'] != data['confirm_password']:
+        if data["password"] != data["confirm_password"]:
             raise serializers.ValidationError(
-                {"confirm_password": ["Passwords do not match with confirm_password."]})
+                {"confirm_password": ["Passwords do not match with confirm_password."]}
+            )
 
         # Validate OTP
-        email = data.get('email')
-        token = data.get('token')
+        email = data.get("email")
+        token = data.get("token")
 
-        
         consumer = Consumer.get_by_email(email=email)
         if consumer.password_reset_token != token:
             raise serializers.ValidationError({"token": ["Invalid token."]})

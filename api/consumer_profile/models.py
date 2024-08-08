@@ -1,10 +1,9 @@
-from datetime import datetime
 import os
-from mongoengine import Document, EmbeddedDocument, fields
+from datetime import datetime
 
 from django.contrib.auth.hashers import check_password, make_password
+from mongoengine import Document, EmbeddedDocument, fields
 from rest_framework.exceptions import NotFound
-
 
 
 class Country(EmbeddedDocument):
@@ -42,7 +41,7 @@ class Consumer(Document):
     mobile = fields.StringField()
     email_hash = fields.StringField()
     mobile_hash = fields.StringField()
-    citizen = fields.EmbeddedDocumentListField(Country) 
+    citizen = fields.EmbeddedDocumentListField(Country)
 
     # Profile fields
     profile_completeness = fields.IntField(default=0)
@@ -52,9 +51,7 @@ class Consumer(Document):
     profilepic_filename = fields.StringField()
     profilepic_content_type = fields.StringField()
 
-
-    meta = {'collection': 'consumers',
-            'indexes': ['coffer_id']}
+    meta = {"collection": "consumers", "indexes": ["coffer_id"]}
 
     @property
     def is_authenticated(self):
@@ -71,8 +68,7 @@ class Consumer(Document):
     def get_by_coffer_id(cls, coffer_id):
         consumer = cls.objects(coffer_id=coffer_id).first()  # type: ignore
         if not consumer:
-            raise NotFound(
-                "Consumer with the provided coffer ID does not exist.")
+            raise NotFound("Consumer with the provided coffer ID does not exist.")
         return consumer
 
     @classmethod
@@ -82,17 +78,21 @@ class Consumer(Document):
             raise NotFound("Consumer with the provided email does not exist.")
         return consumer
 
+    @classmethod
+    def hash_password(cls, password):
+        return make_password(password)
+
     def save(self, *args, **kwargs):
-            if not self.joined:
-                self.joined = datetime.utcnow()
-            return super(Consumer, self).save(*args, **kwargs)
+        if not self.joined:
+            self.joined = datetime.utcnow()
+        return super(Consumer, self).save(*args, **kwargs)
 
     def is_password_match(self, password):
         return check_password(password, self.password)  # type: ignore
 
     def custom_uid(self):
         if self.email:
-            return self.email.replace('.', '').replace('@', '').strip()  # type: ignore
+            return self.email.replace(".", "").replace("@", "").strip()  # type: ignore
         elif self.mobile:
             return self.mobile.strip()  # type: ignore
         return None
