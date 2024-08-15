@@ -48,23 +48,17 @@ class UpdateProfileSerializer(serializers.Serializer):
     email = serializers.EmailField(required=False)
     mobile = serializers.CharField(required=False)
 
-    old_password = serializers.CharField(
-        write_only=True, required=False
-    )
-    new_password = serializers.CharField(
-        write_only=True, required=False
-    )
-    confirm_password = serializers.CharField(
-        write_only=True, required=False
-    )
+    old_password = serializers.CharField(write_only=True, required=False)
+    new_password = serializers.CharField(write_only=True, required=False)
+    confirm_password = serializers.CharField(write_only=True, required=False)
 
     def validate(self, data):
         request = self.context["request"]
         coffer_id = request.user.get("coffer_id")
 
-        old_password = data.get("old_password")
-        new_password = data.get("new_password")
-        confirm_password = data.get("confirm_password")
+        old_password = data.get("old_password", None)
+        new_password = data.get("new_password", None)
+        confirm_password = data.get("confirm_password", None)
 
         if old_password and new_password and confirm_password:
             con_obj = Consumer.get_by_coffer_id(coffer_id)
@@ -79,6 +73,8 @@ class UpdateProfileSerializer(serializers.Serializer):
                         "confirm_password": "New password and confirm password do not match."
                     }
                 )
+            if "email" in data:
+                data.pop("email")
             # hash the new password and remove old, new, and confirm password fields from the data
             data["password"] = Consumer.hash_password(new_password)
             data.pop("old_password", None)
@@ -86,5 +82,3 @@ class UpdateProfileSerializer(serializers.Serializer):
             data.pop("confirm_password", None)
 
         return data
-
- 

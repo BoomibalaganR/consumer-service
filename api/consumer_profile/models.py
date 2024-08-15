@@ -58,6 +58,10 @@ class Consumer(Document):
         return True
 
     @classmethod
+    def exists_by_coffer_id(cls, coffer_id=None):
+        return cls.objects(coffer_id=coffer_id).count() > 0  # type: ignore
+
+    @classmethod
     def generate_coffer_id(cls):
         uid = os.urandom(8).hex().upper()
         if Consumer.objects(coffer_id=uid):  # type: ignore
@@ -87,6 +91,9 @@ class Consumer(Document):
             self.joined = datetime.utcnow()
         return super(Consumer, self).save(*args, **kwargs)
 
+    def get_full_name(self):
+        return "{} {}".format(self.first_name, self.last_name)
+
     def is_password_match(self, password):
         return check_password(password, self.password)  # type: ignore
 
@@ -114,3 +121,6 @@ class Consumer(Document):
         self.password_reset_token = None  # Clear the reset token
         self.password_reset_timestamp = None  # Clear the timestamp
         self.save()
+
+    def get_profile_url(self):
+        return ""
