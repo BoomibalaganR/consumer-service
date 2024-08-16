@@ -55,9 +55,7 @@ class CreateRelationshipView(generics.CreateAPIView):
         print("Successfully sent request")
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        super().post(request, *args, **kwargs)
         return Response(
             {"message": "Request sent successfully."}, status=status.HTTP_201_CREATED
         )
@@ -68,6 +66,7 @@ class AcceptRelationshipView(generics.UpdateAPIView):
 
     def get_object(self):
         rel_id = self.kwargs.get("rel_id")
+
         try:
             relationship = SpecialRelationship.objects.get(id=rel_id)  # type: ignore
         except SpecialRelationship.DoesNotExist:  # type: ignore
@@ -91,7 +90,7 @@ class AcceptRelationshipView(generics.UpdateAPIView):
         # Update the relationship
         relationship.isaccepted = True
         relationship.accepted_date = datetime.utcnow()
-        relationship.status = "Accepted"
+        relationship.status = "accepted"
         relationship.save()
 
         print(">>>>>> SEND EMAIL NOTIFICATION <<<<<<")

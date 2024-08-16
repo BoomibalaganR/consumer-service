@@ -76,7 +76,7 @@ class LoginView(generics.GenericAPIView):
 
         if consumer.lastlogin is None:
             print("==========>>>> WELCOME EMAIL <<<<==============")
-        print(consumer.to_json())
+
         serializer = ConsumerAuthResponseSerializer(consumer)
 
         token = generate_jwt_token(consumer)

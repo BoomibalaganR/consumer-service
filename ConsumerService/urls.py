@@ -19,7 +19,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path("api/consumers/auth/", include("api.authentication.urls")),
-    path("api/consumers/profile", include("api.consumer_profile.urls")),
+    path("api/consumers/profile/", include("api.consumer_profile.urls")),
     path("api/consumers/verification/", include("api.verification.urls")),
     path("api/consumers/relationships/", include("api.relationship.urls")),
 ]
