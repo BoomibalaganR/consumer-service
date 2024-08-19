@@ -3,6 +3,7 @@ from api.relationship.views import (
     CreateRelationshipView,
     GetRelationshipsByIdView,
     ListRelationshipsView,
+    TagCountView,
 )
 from django.urls import path
 
@@ -12,6 +13,7 @@ urlpatterns = [
         ListRelationshipsView.as_view(),
         name="list-relationships",
     ),
+    path("tagcount", TagCountView.as_view(), name="relationship-tag-count"),
     path(
         "request",
         CreateRelationshipView.as_view(),

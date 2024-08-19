@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime
 
 from api.consumer_profile.models import Consumer
@@ -135,3 +136,33 @@ class GetRelationshipsByIdView(generics.RetrieveAPIView):
         # response = super().get(request, *args, **kwargs)
         relationship = self.get_object()
         return Response({"data": relationship.to_json()}, status=status.HTTP_200_OK)
+
+
+class TagCountView(generics.GenericAPIView):
+    authentication_classes = [CustomJWTAuthentication]
+
+    def get_queryset(self):
+        coffer_id = self.request.user.get("coffer_id")  # type: ignore
+        return SpecialRelationship.objects(  # type: ignore
+            __raw__={"$or": [{"acceptor_uid": coffer_id}, {"requestor_uid": coffer_id}]}
+        ).only("acceptor_tags", "requestor_tags", "acceptor_uid")
+
+    def get(self, request, *args, **kwargs):
+        coffer_id = request.user.get("coffer_id")  # type: ignore
+        documents = self.get_queryset()
+        tag_counter = Counter()
+
+        for doc in documents:
+            if doc.acceptor_uid == coffer_id:
+                tags = doc.acceptor_tags
+            else:
+                tags = doc.requestor_tags
+
+            tag_counter.update(tags)
+
+        # Format the results
+        tag_counts = [
+            {"tagName": tag, "count": count} for tag, count in tag_counter.items()
+        ]
+
+        return Response({"counts": tag_counts}, status=status.HTTP_200_OK)
