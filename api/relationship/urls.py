@@ -23,7 +23,7 @@ urlpatterns = [
         name="get-relationship-By-id",
     ),
     path(
-        "accept/<str:rel_id>",
+        "<str:rel_id>/accept",
         AcceptRelationshipView.as_view(),
         name="accept-relationship",
     ),

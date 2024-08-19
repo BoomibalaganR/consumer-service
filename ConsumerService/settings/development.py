@@ -21,13 +21,7 @@ DEBUG = os.getenv("DEBUG", "true") == "true"
 # )
 
 try:
-    mongoengine.connect(
-        db="vitagist-DB",
-        host="mongodb+srv://boomibalaganR:Boomi1234@cluster0.ue0af0l.mongodb.net/vitagist-DB?retryWrites=true&w=majority&appName=Cluster0",
-        username="boomibalaganR",
-        password="Boomi1234",
-        authentication_source="admin",
-    )
+    mongoengine.connect(host=os.getenv("MONGO_DB_URI"))
     print("cloud Consumer DB successfully connected.")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")

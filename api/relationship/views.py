@@ -118,7 +118,7 @@ class ListRelationshipsView(generics.ListAPIView):
 
 
 class GetRelationshipsByIdView(generics.RetrieveAPIView):
-    serializer_class = RetrieveRelationshipSerializer
+    # serializer_class = RetrieveRelationshipSerializer
     authentication_classes = [CustomJWTAuthentication]
 
     def get_object(self):
@@ -132,5 +132,6 @@ class GetRelationshipsByIdView(generics.RetrieveAPIView):
             raise NotFound({"detail": "Relationship not found."})
 
     def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-        return Response({"data": response.data}, status=status.HTTP_200_OK)
+        # response = super().get(request, *args, **kwargs)
+        relationship = self.get_object()
+        return Response({"data": relationship.to_json()}, status=status.HTTP_200_OK)

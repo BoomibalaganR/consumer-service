@@ -18,8 +18,8 @@ Including another URLconf
 from django.urls import include, path
 
 urlpatterns = [
-    path("api/consumers/auth/", include("api.authentication.urls")),
-    path("api/consumers/profile/", include("api.consumer_profile.urls")),
-    path("api/consumers/verification/", include("api.verification.urls")),
-    path("api/consumers/relationships/", include("api.relationship.urls")),
+    path("api/v1/consumers/auth/", include("api.authentication.urls")),
+    path("api/v1/consumers/profile/", include("api.consumer_profile.urls")),
+    path("api/v1/consumers/verification/", include("api.verification.urls")),
+    path("api/v1/consumers/relationships/", include("api.relationship.urls")),
 ]
